@@ -1,0 +1,700 @@
+
+{
+  "entities": {
+    "Appointment": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Appointment",
+      "type": "object",
+      "description": "Represents an appointment between a patient and a doctor.",
+      "properties": {
+        "id": { "type": "string" },
+        "doctorId": { "type": "string" },
+        "patientId": { "type": "string", "description": "The UID of the patient." },
+        "patientDisplayId": { "type": "string", "description": "The user-facing patient ID (e.g., PT-XXXXXXXXXX)." },
+        "patientName": { "type": "string" },
+        "doctorName": { "type": "string" },
+        "date": { "type": "string", "format": "date" },
+        "time": { "type": "string" },
+        "type": { "type": "string", "enum": ["In-Person", "Virtual"] },
+        "specialty": { "type": "string" },
+        "location": { "type": "string" },
+        "status": { "type": "string", "enum": ["Scheduled", "Completed", "Canceled"] },
+        "reason": { "type": "string" }
+      },
+      "required": ["id", "doctorId", "patientId", "patientDisplayId", "patientName", "doctorName", "date", "time", "type", "status"]
+    },
+    "DoctorProfile": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "DoctorProfile",
+      "type": "object",
+      "description": "Represents a doctor's public profile.",
+      "properties": {
+        "id": { "type": "string" },
+        "firstName": { "type": "string" },
+        "lastName": { "type": "string" },
+        "specialty": { "type": "string" },
+        "city": { "type": "string" },
+        "state": { "type": "string" },
+        "country": { "type": "string" },
+        "clinic": { "type": "string", "description": "Primary clinic or hospital name." },
+        "biography": { "type": "string" },
+        "languagesKnown": { "type": "array", "items": { "type": "string" } },
+        "subSpecializations": { "type": "array", "items": { "type": "string" } },
+        "qualifications": { "type": "string" },
+        "licenseNumber": { "type": "string" },
+        "yearsOfExperience": { "type": "number" },
+        "designation": { "type": "string" },
+        "isVerified": { "type": "boolean", "description": "Master flag indicating if the doctor's profile and documents are fully verified." },
+        "verificationNote": { "type": "string", "description": "Notes from the admin regarding the verification status (e.g., reason for rejection)." },
+        "registrationDetails": {
+          "type": "object",
+          "properties": {
+            "registrationNumber": { "type": "string" },
+            "issuingCouncil": { "type": "string" },
+            "issuedYear": { "type": "number" }
+          }
+        },
+        "treatmentsAndProcedures": { "type": "string" },
+        "conditionsHandled": { "type": "string" },
+        "teleconsultation": { "type": "boolean" },
+        "availability": {
+          "type": "object",
+          "properties": {
+            "workingHours": { "type": "string" },
+            "availableDays": { "type": "string" },
+            "appointmentDuration": { "type": "number" },
+            "onlineSlots": { "type": "string" }
+          }
+        },
+        "pricing": {
+          "type": "object",
+          "properties": {
+            "clinicFee": { "type": "number" },
+            "onlineFee": { "type": "number" },
+            "followUpFee": { "type": "number" }
+          }
+        },
+        "stats": {
+            "type": "object",
+            "properties": {
+                "averageRating": { "type": "number" },
+                "totalConsultations": { "type": "number" }
+            }
+        },
+        "verification": {
+          "type": "object",
+          "description": "Stores status and URLs for doctor's verification documents.",
+          "properties": {
+            "medicalDegree": { "$ref": "#/backend/entities/VerificationDocument" },
+            "internshipCertificate": { "$ref": "#/backend/entities/VerificationDocument" },
+            "registrationCertificate": { "$ref": "#/backend/entities/VerificationDocument" },
+            "identityProof": { "$ref": "#/backend/entities/VerificationDocument" },
+            "goodStandingCertificate": { "$ref": "#/backend/entities/VerificationDocument" },
+            "photograph": { "$ref": "#/backend/entities/VerificationDocument" },
+            "specializationCertificate": { "$ref": "#/backend/entities/VerificationDocument" }
+          }
+        }
+      },
+      "required": ["id", "firstName", "lastName", "specialty", "city", "state", "country"]
+    },
+    "PatientLink": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "PatientLink",
+      "type": "object",
+      "description": "Represents a link to a patient in a doctor's patient list.",
+      "properties": {
+        "patientId": {
+          "type": "string",
+          "description": "The UID of the linked patient."
+        },
+        "firstName": {
+          "type": "string"
+        },
+        "lastName": {
+          "type": "string"
+        },
+        "email": {
+          "type": "string",
+          "format": "email"
+        }
+      },
+      "required": ["patientId", "firstName", "lastName", "email"]
+    },
+    "UserProfile": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "UserProfile",
+      "type": "object",
+      "description": "Represents a user profile in the Swasthya application.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the UserProfile entity."
+        },
+        "patientId": {
+            "type": "string",
+            "description": "Custom, user-facing patient identifier (e.g., PT-XXXXXXXXXX)."
+        },
+        "doctorId": {
+          "type": "string",
+          "description": "The UID of the assigned doctor (for patients)."
+        },
+        "firstName": {
+          "type": "string",
+          "description": "First name of the user."
+        },
+        "lastName": {
+          "type": "string",
+          "description": "Last name of the user."
+        },
+        "email": {
+          "type": "string",
+          "description": "Email address of the user.",
+          "format": "email"
+        },
+        "dateOfBirth": {
+          "type": "string",
+          "description": "Date of birth of the user.",
+          "format": "date"
+        },
+        "gender": {
+          "type": "string",
+          "description": "Gender of the user."
+        },
+        "phoneNumber": {
+          "type": "string",
+          "description": "Phone number of the user."
+        },
+        "role": {
+          "type": "string",
+          "description": "Role of the user within the application.",
+          "enum": ["patient", "doctor", "admin"]
+        },
+        "preferredLanguage": {
+          "type": "string",
+          "description": "Preferred language of the user."
+        },
+        "healthRecordIds": {
+          "type": "array",
+          "description": "References to HealthRecords. (Relationship: UserProfile 1:N HealthRecord)",
+          "items": {
+            "type": "string"
+          }
+        },
+        "bloodGroup": {
+            "type": "string",
+            "description": "User's blood group.",
+            "enum": ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"]
+        },
+        "address": {
+            "type": "object",
+            "description": "User's full address and location information.",
+            "properties": {
+                "fullAddress": {"type": "string"},
+                "city": {"type": "string"},
+                "state": {"type": "string"},
+                "country": {"type": "string"},
+                "pinCode": {"type": "string"},
+                "geolocation": {
+                    "type": "object",
+                    "properties": {
+                        "lat": {"type": "number"},
+                        "lon": {"type": "number"}
+                    }
+                }
+            },
+            "required": ["fullAddress", "city", "state", "country", "pinCode"]
+        },
+        "emergencyContact": {
+            "type": "object",
+            "description": "User's emergency contact information.",
+            "properties": {
+                "name": {"type": "string"},
+                "phone": {"type": "string"},
+                "relation": {"type": "string"}
+            },
+            "required": ["name", "phone", "relation"]
+        },
+        "dateFormat": {
+          "type": "string",
+          "description": "User's preferred date format."
+        },
+        "notificationSettings": {
+            "type": "object",
+            "description": "User's notification preferences.",
+            "properties": {
+                "appointmentReminders": {"type": "boolean"},
+                "prescriptionReminders": {"type": "boolean"},
+                "vaccinationReminders": {"type": "boolean"},
+                "healthTips": {"type": "boolean"},
+                "email": {"type": "boolean"},
+                "sms": {"type": "boolean"},
+                "push": {"type": "boolean"}
+            }
+        },
+        "healthMetrics": {
+            "type": "object",
+            "description": "User's key health metrics.",
+            "properties": {
+                "height": { "type": "number", "description": "Height in centimeters." },
+                "weight": { "type": "number", "description": "Weight in kilograms." },
+                "bloodPressure": { "type": "string", "description": "Most recent blood pressure reading (e.g., '120/80')." },
+                "bloodSugar": { "type": "number", "description": "Most recent blood sugar level in mg/dL." },
+                "pulseRate": { "type": "number", "description": "Most recent resting pulse rate in bpm." }
+            }
+        },
+        "medicalDetails": {
+          "type": "object",
+          "description": "Static medical details about the user.",
+          "properties": {
+            "disabilities": { "type": "string", "description": "Any physical or mental disabilities." },
+            "familyMedicalHistory": { "type": "string", "description": "Known medical conditions in the user's family." },
+            "knownAllergies": { "type": "string", "description": "All known drug, food, or environmental allergies." },
+            "existingMedicalConditions": { "type": "string", "description": "Ongoing medical conditions like Diabetes, BP, etc." }
+          }
+        },
+        "languagesKnown": { "type": "array", "items": { "type": "string" } }
+      },
+      "required": [
+        "id",
+        "firstName",
+        "lastName",
+        "email",
+        "dateOfBirth",
+        "phoneNumber",
+        "role"
+      ]
+    },
+    "VerificationDocument": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "VerificationDocument",
+      "type": "object",
+      "description": "Represents a document for verification.",
+      "properties": {
+        "url": { "type": "string" },
+        "status": { "type": "string", "enum": ["Not Uploaded", "Pending", "Verified", "Rejected", "Suspended"] }
+      },
+      "required": ["status"]
+    },
+    "VaccinationDrive": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "VaccinationDrive",
+      "type": "object",
+      "description": "Represents a vaccination drive event.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the VaccinationDrive entity."
+        },
+        "location": {
+          "type": "string",
+          "description": "Location of the vaccination drive."
+        },
+        "schedule": {
+          "type": "string",
+          "description": "Schedule of the vaccination drive (e.g., date and time).",
+          "format": "date-time"
+        },
+        "vaccineType": {
+          "type": "string",
+          "description": "Type of vaccine offered at the drive."
+        },
+        "description": {
+          "type": "string",
+          "description": "A description of the vaccination drive."
+        }
+      },
+      "required": [
+        "id",
+        "location",
+        "schedule",
+        "vaccineType"
+      ]
+    },
+     "VaccinationRegistration": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "VaccinationRegistration",
+      "type": "object",
+      "description": "Represents a user's registration for a vaccination drive.",
+      "properties": {
+        "id": { "type": "string" },
+        "driveId": { "type": "number" },
+        "driveName": { "type": "string" },
+        "userId": { "type": "string" },
+        "userName": { "type": "string" },
+        "userAge": { "type": "number" },
+        "userLocation": { "type": "string" },
+        "doseType": { "type": "string", "enum": ["Dose 1", "Dose 2", "Booster"] },
+        "vaccineCenter": { "type": "string" },
+        "appointmentSlot": { "type": "string", "format": "date-time" },
+        "registeredAt": { "type": "string", "format": "date-time" },
+        "status": { "type": "string", "enum": ["Scheduled", "Completed", "Canceled"] }
+      },
+      "required": ["driveId", "userId", "userName", "registeredAt", "status"]
+    },
+    "HealthCamp": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "HealthCamp",
+      "type": "object",
+      "description": "Represents a health camp event.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the HealthCamp entity."
+        },
+        "location": {
+          "type": "string",
+          "description": "Location of the health camp."
+        },
+        "startTime": {
+          "type": "string",
+          "description": "Starting time of the health camp.",
+          "format": "date-time"
+        },
+        "endTime": {
+          "type": "string",
+          "description": "Ending time of the health camp.",
+          "format": "date-time"
+        },
+        "availableServices": {
+          "type": "string",
+          "description": "Details of available services at the health camp."
+        },
+        "description": {
+          "type": "string",
+          "description": "A description of the health camp."
+        }
+      },
+      "required": [
+        "id",
+        "location",
+        "startTime",
+        "endTime",
+        "availableServices"
+      ]
+    },
+    "MedicalNotification": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "MedicalNotification",
+      "type": "object",
+      "description": "Represents a medical notification sent to users.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the MedicalNotification entity."
+        },
+        "userId": {
+          "type": "string",
+          "description": "Reference to UserProfile. (Relationship: UserProfile 1:N MedicalNotification)"
+        },
+        "message": {
+          "type": "string",
+          "description": "The content of the medical notification."
+        },
+        "timestamp": {
+          "type": "string",
+          "description": "Timestamp of when the notification was sent.",
+          "format": "date-time"
+        },
+        "type": {
+          "type": "string",
+          "description": "Type of medical notification (e.g., appointment reminder, medication alert)."
+        }
+      },
+      "required": [
+        "id",
+        "userId",
+        "message",
+        "timestamp",
+        "type"
+      ]
+    },
+    "HealthRecord": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "HealthRecord",
+      "type": "object",
+      "description": "Represents a user's health record.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the HealthRecord entity."
+        },
+        "recordType": {
+          "type": "string",
+          "description": "Type of health record (e.g., vaccination record, medical history)."
+        },
+        "details": {
+          "type": "string",
+          "description": "Detailed information contained within the health record."
+        },
+        "dateCreated": {
+          "type": "string",
+          "description": "Date when the health record was created.",
+          "format": "date-time"
+        },
+        "userId": {
+          "type": "string",
+          "description": "Reference to UserProfile. (Relationship: UserProfile 1:N HealthRecord)"
+        }
+      },
+      "required": [
+        "id",
+        "recordType",
+        "details",
+        "dateCreated",
+        "userId"
+      ]
+    },
+    "Prescription": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Prescription",
+      "type": "object",
+      "description": "Represents a single medication prescription.",
+      "properties": {
+        "id": { "type": "string" },
+        "patientId": { "type": "string", "description": "The UID of the patient." },
+        "patientName": { "type": "string" },
+        "doctorId": { "type": "string", "description": "The UID of the prescribing doctor." },
+        "doctorName": { "type": "string" },
+        "medication": { "type": "string", "description": "The name of the medication." },
+        "dosage": { "type": "string", "description": "Dosage and instructions (e.g., '500mg, twice a day')." },
+        "date": { "type": "string", "format": "date", "description": "The date the prescription was issued." },
+        "endDate": { "type": "string", "format": "date", "description": "Optional end date for the medication course." },
+        "status": { "type": "string", "enum": ["Active", "Finished", "Canceled"] }
+      },
+      "required": ["id", "patientId", "patientName", "doctorId", "doctorName", "medication", "dosage", "date", "status"]
+    },
+    "ForumPost": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "ForumPost",
+      "type": "object",
+      "description": "Represents a post in the community forum.",
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "content": { "type": "string" },
+        "authorId": { "type": "string" },
+        "authorName": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "topic": { "type": "string" },
+        "replyCount": { "type": "number" },
+        "viewCount": { "type": "number", "description": "The number of times the post has been viewed." },
+        "likeCount": { "type": "number", "description": "The number of likes on the post." },
+        "likedBy": { "type": "array", "items": { "type": "string" }, "description": "List of user UIDs who liked the post." }
+      },
+      "required": ["id", "title", "content", "authorId", "authorName", "createdAt"]
+    },
+    "ForumReply": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "ForumReply",
+      "type": "object",
+      "description": "Represents a reply to a forum post.",
+      "properties": {
+        "id": { "type": "string" },
+        "postId": { "type": "string" },
+        "parentReplyId": { "type": "string", "description": "The ID of the direct parent reply, if it exists." },
+        "content": { "type": "string" },
+        "authorId": { "type": "string" },
+        "authorName": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "replyCount": { "type": "number", "description": "The number of direct replies to this comment." }
+      },
+      "required": ["id", "postId", "content", "authorId", "authorName", "createdAt"]
+    },
+    "Feedback": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Feedback",
+      "type": "object",
+      "description": "Represents user feedback for the application.",
+      "properties": {
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "userName": { "type": "string" },
+        "feedbackType": { "type": "string", "enum": ["General Feedback", "Bug Report", "Feature Request"] },
+        "message": { "type": "string" },
+        "rating": { "type": "number" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "status": { "type": "string", "enum": ["New", "In Progress", "Resolved"] }
+      },
+      "required": ["id", "userId", "userName", "feedbackType", "message", "createdAt", "status"]
+    }
+  },
+  "auth": {
+    "providers": [
+      "password",
+      "anonymous"
+    ]
+  },
+  "firestore": {
+    "structure": [
+      {
+        "path": "/users/{userId}",
+        "definition": {
+          "entityName": "UserProfile",
+          "schema": {
+            "$ref": "#/backend/entities/UserProfile"
+          },
+          "description": "Stores private user profile information for both patients and doctors. Path-based ownership ensures only the authenticated user can access their profile.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier of the user."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/doctors/{doctorId}",
+        "definition": {
+            "entityName": "DoctorProfile",
+            "schema": { "$ref": "#/backend/entities/DoctorProfile" },
+            "description": "A public collection storing information about doctors that is safe for any user to read (e.g., for finding a doctor).",
+            "params": [{ "name": "doctorId", "description": "The UID of the doctor, which should match their UID in the /users collection." }]
+        }
+      },
+      {
+        "path": "/appointments/{appointmentId}",
+        "definition": {
+          "entityName": "Appointment",
+          "schema": { "$ref": "#/backend/entities/Appointment" },
+          "description": "A collection storing all appointments. Security rules will enforce that only involved parties (patient, doctor) or an admin can access a document.",
+          "params": [{ "name": "appointmentId", "description": "The unique identifier for the appointment." }]
+        }
+      },
+      {
+        "path": "/prescriptions/{prescriptionId}",
+        "definition": {
+          "entityName": "Prescription",
+          "schema": { "$ref": "#/backend/entities/Prescription" },
+          "description": "A collection storing all prescriptions. Security rules will enforce that only involved parties (patient, doctor) or an admin can access a document.",
+          "params": [{ "name": "prescriptionId", "description": "The unique identifier for the prescription." }]
+        }
+      },
+      {
+        "path": "/users/{doctorId}/patients/{patientId}",
+        "definition": {
+          "entityName": "PatientLink",
+          "schema": { "$ref": "#/backend/entities/PatientLink" },
+          "description": "A subcollection within a doctor's user document that links them to their patients. This is used for authorization checks.",
+          "params": [
+            { "name": "doctorId", "description": "The UID of the doctor." },
+            { "name": "patientId", "description": "The UID of the patient." }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/healthRecords/{healthRecordId}",
+        "definition": {
+          "entityName": "HealthRecord",
+          "schema": {
+            "$ref": "#/backend/entities/HealthRecord"
+          },
+          "description": "Stores user's generic health records like lab reports and vaccination info. Specific records like prescriptions have their own collection. Path-based ownership ensures only the authenticated user or their assigned doctor can access them.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier of the user."
+            },
+            {
+              "name": "healthRecordId",
+              "description": "The unique identifier of the health record."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/vaccinationDrives/{vaccinationDriveId}",
+        "definition": {
+          "entityName": "VaccinationDrive",
+          "schema": {
+            "$ref": "#/backend/entities/VaccinationDrive"
+          },
+          "description": "Stores information about vaccination drives. This is a public collection.",
+          "params": [
+            {
+              "name": "vaccinationDriveId",
+              "description": "The unique identifier of the vaccination drive."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/vaccinationRegistrations/{registrationId}",
+        "definition": {
+          "entityName": "VaccinationRegistration",
+          "schema": { "$ref": "#/backend/entities/VaccinationRegistration" },
+          "description": "A collection storing user registrations for vaccination drives.",
+          "params": [{ "name": "registrationId", "description": "The unique identifier for the registration." }]
+        }
+      },
+      {
+        "path": "/healthCamps/{healthCampId}",
+        "definition": {
+          "entityName": "HealthCamp",
+          "schema": {
+            "$ref": "#/backend/entities/HealthCamp"
+          },
+          "description": "Stores information about health camps. This is a public collection.",
+          "params": [
+            {
+              "name": "healthCampId",
+              "description": "The unique identifier of the health camp."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/notifications/{notificationId}",
+        "definition": {
+          "entityName": "MedicalNotification",
+          "schema": {
+            "$ref": "#/backend/entities/MedicalNotification"
+          },
+          "description": "Stores medical notifications for users. Path-based ownership ensures only the authenticated user can access their notifications.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier of the user."
+            },
+            {
+              "name": "notificationId",
+              "description": "The unique identifier of the medical notification."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/forumPosts/{postId}",
+        "definition": {
+          "entityName": "ForumPost",
+          "schema": { "$ref": "#/backend/entities/ForumPost" },
+          "description": "A collection for storing community forum posts.",
+          "params": [{ "name": "postId", "description": "The unique identifier for the forum post." }]
+        }
+      },
+      {
+        "path": "/forumPosts/{postId}/replies/{replyId}",
+        "definition": {
+          "entityName": "ForumReply",
+          "schema": { "$ref": "#/backend/entities/ForumReply" },
+          "description": "A subcollection storing replies for a specific forum post.",
+          "params": [
+            { "name": "postId", "description": "The unique identifier for the parent forum post." },
+            { "name": "replyId", "description": "The unique identifier for the reply." }
+          ]
+        }
+      },
+      {
+        "path": "/feedback/{feedbackId}",
+        "definition": {
+          "entityName": "Feedback",
+          "schema": { "$ref": "#/backend/entities/Feedback" },
+          "description": "A collection for storing user feedback.",
+          "params": [{ "name": "feedbackId", "description": "The unique identifier for the feedback entry." }]
+        }
+      }
+    ],
+    "reasoning": "The Firestore data structure has been redesigned for clarity and security. The core change is the introduction of a public `/doctors` collection, which is separate from the private `/users` collection. The `/doctors` collection stores only non-sensitive information necessary for patients to find and view doctor profiles. The `/users` collection holds all private data for both patients and doctors, strictly secured by user UID. This separation prevents permission errors when listing doctors and adheres to security best practices by not exposing the entire user base. Added ForumPost and ForumReply collections for community discussion feature. Added a Feedback collection to store user feedback. Added a dedicated `/prescriptions` collection for better data structure and security."
+  }
+}
+
+  
