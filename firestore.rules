@@ -128,15 +128,9 @@ service cloud.firestore {
         // Anyone can view a doctor's public profile.
         allow get, list: if true;
         
-        // A doctor can create their own profile.
-        allow create: if isOwner(doctorId);
-
-        // Admins can update any field.
-        // Doctors can update any field EXCEPT isVerified and verificationNote.
-        allow update: if isSignedIn() && (
-            isAdmin() || 
-            (isOwner(doctorId) && !('isVerified' in request.resource.data) && !('verificationNote' in request.resource.data))
-        );
+        // Only the doctor themselves or an admin can create/update.
+        allow create, update: if isSignedIn()
+          && (isOwner(doctorId) || isAdmin());
     }
     
 
@@ -204,23 +198,6 @@ service cloud.firestore {
         allow create, update, delete: if isAdmin();
     }
 
-    // ============================================================
-    // /vaccinationRegistrations/{registrationId}
-    // ============================================================
-    match /vaccinationRegistrations/{registrationId} {
-        // A user can create their own registration.
-        allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
-        
-        // A user can read their own registration, admins can read any.
-        allow get: if isSignedIn() && (isOwner(resource.data.userId) || isAdmin());
-        
-        // A user can list registrations they own, admins can list all.
-        allow list: if isSignedIn() && (request.query.where.userId == request.auth.uid || isAdmin());
-        
-        // Admins can delete registrations.
-        allow delete, update: if isAdmin();
-    }
-
 
     // ============================================================
     // /healthCamps/{healthCampId} (public)
@@ -240,27 +217,19 @@ service cloud.firestore {
         // Anyone can read posts.
         allow get, list: if true;
 
-        // Allow owner/admin to update/delete.
-        allow update: if isSignedIn() &&
+        // Only the author or an admin can update/delete their own post.
+        // This is a simplified version. Let's separate like/view updates.
+        allow update: if isSignedIn() && 
           (
             (isOwner(resource.data.authorId) || isAdmin()) ||
             (
-              // Allow any signed in user to increment the like count and add their own UID to likedBy
-              request.resource.data.diff(resource.data).affectedKeys().hasOnly(['likeCount', 'likedBy']) &&
+              // Allow anyone to increment like/view counts and add to likedBy
+              request.resource.data.diff(resource.data).affectedKeys().hasOnly(['likeCount', 'viewCount', 'likedBy']) &&
               request.resource.data.likeCount == resource.data.likeCount + 1 &&
               request.resource.data.likedBy.hasAll(resource.data.likedBy) &&
-              request.resource.data.likedBy.size() == resource.data.likedBy.size() + 1 &&
-              request.auth.uid in request.resource.data.likedBy
+              request.resource.data.likedBy.size() == resource.data.likedBy.size() + 1
             ) ||
             (
-              // Allow a user to decrement the like count and remove their own UID from likedBy
-              request.resource.data.diff(resource.data).affectedKeys().hasOnly(['likeCount', 'likedBy']) &&
-              request.resource.data.likeCount == resource.data.likeCount - 1 &&
-              !request.resource.data.likedBy.hasAny([request.auth.uid]) &&
-              request.auth.uid in resource.data.likedBy
-            ) ||
-            (
-                // Allow anyone to increment viewCount
                 request.resource.data.diff(resource.data).affectedKeys().hasOnly(['viewCount']) &&
                 request.resource.data.viewCount == resource.data.viewCount + 1
             )
@@ -288,7 +257,7 @@ service cloud.firestore {
     match /feedback/{feedbackId} {
         // Any signed-in user can create feedback.
         allow create: if isSignedIn();
-
+        
         // Public can list feedback for testimonials if they query for high ratings and correct type
         allow list: if (
             request.query.where.rating >= 4 &&
@@ -300,3 +269,5 @@ service cloud.firestore {
     }
   }
 }
+
+    
